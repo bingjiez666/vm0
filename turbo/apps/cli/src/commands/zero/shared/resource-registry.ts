@@ -28,7 +28,6 @@ type ResourceKind =
   | "design-system"
   | "image-style"
   | "audio-style"
-  | "video-style"
   | "video-template"
   | "bundle-template";
 
@@ -70,7 +69,6 @@ export interface ResourceCandidateSlice {
     readonly designSystems: readonly RegistryEntry[];
     readonly imageStyles: readonly RegistryEntry[];
     readonly audioStyles: readonly RegistryEntry[];
-    readonly videoStyles: readonly RegistryEntry[];
     readonly videoTemplates: readonly RegistryEntry[];
     readonly bundleTemplates: readonly RegistryEntry[];
   };
@@ -3306,10 +3304,9 @@ const RESOURCE_REGISTRY: readonly RegistryEntry[] = [
   },
 ];
 
-const VIDEO_STYLE_REGISTRY: readonly RegistryEntry[] = [
   {
     id: "video-style:chinese-ink-painting",
-    kind: "video-style",
+    kind: "video-template",
     name: "Chinese Ink Painting",
     description:
       "Traditional sumi-e ink wash style with rice paper texture, monochrome palette, and minimalist negative space.",
@@ -3318,7 +3315,7 @@ const VIDEO_STYLE_REGISTRY: readonly RegistryEntry[] = [
   },
   {
     id: "video-style:hand-drawn-fantasy-anime",
-    kind: "video-style",
+    kind: "video-template",
     name: "Hand Drawn Fantasy Anime",
     description:
       "Expressive hand-drawn anime with ink line art, watercolor-wash backgrounds, cel-shaded characters, and a vivid fantasy palette.",
@@ -3327,7 +3324,7 @@ const VIDEO_STYLE_REGISTRY: readonly RegistryEntry[] = [
   },
   {
     id: "video-style:studio-ghibli",
-    kind: "video-style",
+    kind: "video-template",
     name: "Studio Ghibli",
     description:
       "Soft hand-painted watercolor look with warm Ghibli-signature golden light and sweeping landscape compositions.",
@@ -3336,7 +3333,7 @@ const VIDEO_STYLE_REGISTRY: readonly RegistryEntry[] = [
   },
   {
     id: "video-style:wuxia",
-    kind: "video-style",
+    kind: "video-template",
     name: "Wuxia",
     description:
       "Cinematic Chinese martial-arts aesthetic with dramatic chiaroscuro lighting, flowing robes, and ink-wash atmosphere.",
@@ -3362,7 +3359,7 @@ export function findImageStyle(id: string): RegistryEntry | undefined {
 }
 
 export function listVideoStyles(): readonly RegistryEntry[] {
-  return VIDEO_STYLE_REGISTRY;
+  return filterByKind("video-template");
 }
 
 export function findVideoStyle(id: string): RegistryEntry | undefined {
@@ -3440,7 +3437,6 @@ export function selectResourceCandidates(
       designSystems: filterByKind("design-system"),
       imageStyles: filterByKind("image-style"),
       audioStyles: filterByKind("audio-style"),
-      videoStyles: listVideoStyles(),
       videoTemplates: filterByKind("video-template"),
       bundleTemplates: filterByKind("bundle-template"),
     },
