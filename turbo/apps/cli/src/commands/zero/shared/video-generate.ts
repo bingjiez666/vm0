@@ -4,6 +4,8 @@ import { generateWebVideo } from "../../../lib/api";
 import { withErrorHandler } from "../../../lib/command";
 import { dispatchGenerate } from "../generate/lib/dispatch";
 import type { GenerationType } from "../generate/lib/lister";
+import { findVideoStyle, listVideoStyles } from "./resource-registry";
+import { formatRegistryListing } from "./resource-listing";
 
 interface VideoOptions {
   prompt?: string;
@@ -22,6 +24,7 @@ interface VideoOptions {
   audioUrl?: string[];
   firstFrameImageUrl?: string;
   lastFrameImageUrl?: string;
+  style?: string;
   all?: boolean;
 }
 
@@ -354,9 +357,13 @@ export function createVideoGenerateCommand(
     )
     .option("--first-frame-image-url <url>", "First frame image URL")
     .option("--last-frame-image-url <url>", "Last frame image URL")
-    .addHelpText(
-      "after",
-      `
+    .option(
+      "--style <id>",
+      "Video style id from the registry; prepends style keywords to the prompt",
+    )
+    .addHelpText("after", () => {
+      const styles = listVideoStyles();
+      return `
 Examples:
 ${config.examples}
 
@@ -379,8 +386,11 @@ Models:
   - fal.ai: veo3.1-fast and kling-v3-4k. veo3.1-fast supports
     4s/6s/8s, 720p/1080p/4k, negative prompts, seed, auto-fix,
     safety tolerance, and optional audio. kling-v3-4k supports 3s-15s,
-    4k output, negative prompts, and optional audio.`,
-    )
+    4k output, negative prompts, and optional audio.
+
+Video Styles:
+${formatRegistryListing(styles, "video styles")}`;
+    })
     .action(
       withErrorHandler(async (options: VideoOptions) => {
         const dispatch = await dispatchGenerate({
@@ -390,7 +400,28 @@ Models:
           all: options.all,
         });
         if (dispatch.outcome === "handled") return;
-        const prompt = dispatch.prompt;
+        const rawPrompt = dispatch.prompt;
+
+        let prompt = rawPrompt;
+        if (options.style) {
+          const style = findVideoStyle(options.style);
+          if (!style) {
+            const styles = listVideoStyles();
+            const message = [
+              `Unknown video style: ${options.style}`,
+              "",
+              "Available styles:",
+              formatRegistryListing(styles, "video styles"),
+              "",
+              `Example:`,
+              `  ${config.usageCommand} --style ${styles[0]?.id ?? "<style-id>"} --prompt "..."`,
+            ].join("\n");
+            throw new Error(message);
+          }
+          if (style.desc) {
+            prompt = `${style.desc}. ${rawPrompt}`;
+          }
+        }
 
         await validateVideoOptions(options);
         const result = await generateWebVideo({
