@@ -266,3 +266,23 @@ The `cli-e2e` jobs have a **maximum timeout** (5 minutes for serial, 8 minutes f
 - **Use the user's language** - When communicating directly with users, respond in their language
 - **Language priority** - If the user uses multiple languages, prioritize them in this order: user's primary language(s) first, English last
 - **Consistency** - Once you identify the user's preferred language, maintain that language throughout the conversation
+
+## Video Generation Style Tag Rule
+
+When a user message includes a `Video · [Style Name]` tag (shown above the message in the web UI), you MUST:
+
+1. **Extract the style name first** — before reading anything else in the message.
+2. **Apply it to the video prompt** — prepend the matching visual keywords to the generation prompt. Never infer style from conversation history when a tag is explicitly set.
+3. **Confirm the style** — state which style you're applying at the start of your response.
+
+Style keyword mappings:
+
+| Tag | Inject into prompt |
+|-----|--------------------|
+| Chinese Ink Painting | `traditional Chinese ink painting (sumi-e), monochrome ink wash, rice paper texture, minimalist negative space, loose calligraphic brushstrokes` |
+| Hand Drawn Fantasy Anime | `hand-drawn fantasy anime style, expressive ink line art, watercolor-wash backgrounds, cel-shaded characters, vivid anime color palette, painterly brushstroke textures` |
+| Studio Ghibli / Ghibli | `Studio Ghibli anime style, soft watercolor backgrounds, warm hand-painted textures, Ghibli-signature golden light, sweeping landscapes` |
+| Wuxia | `cinematic wuxia style, dramatic chiaroscuro lighting, flowing robes in slow motion, ink-wash atmosphere` |
+| [Any other style] | Translate the style name literally into matching visual descriptors |
+
+**Rule**: Style tag > conversation context. If the previous message used Ghibli but the current tag says Chinese Ink Painting, use Chinese Ink Painting — no exceptions.
